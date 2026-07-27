@@ -1,0 +1,101 @@
+generated: '2026-07-27'
+method: probed
+source: live anonymous probes of https://connecteddata.nationalgrid.co.uk/api/3/action/
+format: ckan-action-api
+rfc9457: false
+note: >-
+  NGED publishes no error reference of its own — the API Guidance page delegates
+  to docs.ckan.org. Every problem type below was therefore observed live against
+  the NGED instance on 2026-07-27; the message strings are verbatim from the
+  responses. The API does NOT use RFC 9457 problem+json: errors are returned as
+  application/json in the CKAN Action API envelope.
+envelope:
+  media_type: application/json;charset=utf-8
+  success_shape: '{"help": "<help_show url>", "success": true, "result": <payload>}'
+  error_shape: '{"help": "<help_show url>", "error": {"__type": "<class>", "message": "<text>"}, "success": false}'
+  discriminator: error.__type
+  self_documenting: >-
+    Every envelope carries a "help" URL pointing at
+    /api/3/action/help_show?name=<action>, which returns the live docstring for
+    that action. This is the only machine-readable interface description NGED's
+    API exposes.
+  caveat: >-
+    Some framework-level failures bypass the envelope entirely and return a bare
+    JSON string (see status 400 below). Clients must not assume an object body.
+problems:
+- status: 404
+  type: Not Found Error
+  title: Not found
+  body: '{"error": {"__type": "Not Found Error", "message": "Not found"}, "success": false}'
+  cause: The id or name supplied to a *_show action does not exist in the catalogue.
+  remediation: Resolve the dataset name or UUID with package_list or package_search first.
+  observed: /api/3/action/package_show?id=does-not-exist-xyz
+- status: 409
+  type: Validation Error
+  title: Missing or invalid parameter
+  body: '{"error": {"name_or_id": ["Missing value"], "__type": "Validation Error"}, "success": false}'
+  cause: A required parameter was omitted or failed validation.
+  remediation: >-
+    Read the per-field keys alongside __type — CKAN returns one key per offending
+    parameter with a list of messages. Note the non-obvious 409 status for a
+    validation failure.
+  observed: /api/3/action/package_show (no id)
+- status: 403
+  type: Authorization Error
+  title: Access denied
+  body: '{"error": {"__type": "Authorization Error", "message": "Access denied"}, "success": false}'
+  cause: The action is not permitted for an anonymous or under-privileged caller.
+  remediation: Sign in and send an API token in the Authorization header.
+  observed: /api/3/action/user_list
+- status: 200
+  type: Authorization Error
+  title: 'Access denied: Resource access restricted to registered users'
+  body: >-
+    {"error": {"__type": "Authorization Error", "message": "Access denied:
+    Resource access restricted to registered users"}, "success": false}
+  cause: >-
+    A resource-level action (resource_show, datastore_search) was called without
+    a token against a resource whose restricted_level is "registered".
+  remediation: >-
+    Register a free account, create an API token, and send it as the Authorization
+    header value.
+  warning: >-
+    This one is returned with HTTP 200, not 403. A client that branches on the
+    HTTP status alone will treat a denial as a success — always check
+    body.success.
+  observed: /api/3/action/resource_show?id=<uuid> and /api/3/action/datastore_search?resource_id=<uuid>
+- status: 400
+  type: Bad request
+  title: Action name not known
+  body: '"Bad request - Action name not known: no_such_action"'
+  cause: The action segment of the path is not a registered CKAN action.
+  remediation: Check the action name against the API Guidance endpoint table or docs.ckan.org.
+  warning: The body is a bare JSON string, not the standard error envelope.
+  observed: /api/3/action/no_such_action
+- status: 400
+  type: Bad request
+  title: Wrong HTTP method
+  body: '"Bad request - JSON Error: Invalid request. Please use POST method for your request"'
+  cause: A write/side-effecting action was called with GET.
+  remediation: >-
+    Use POST for any action that changes state. In practice no write action is
+    available to a public NGED caller — the portal is read-only to third parties.
+  observed: /api/3/action/package_create
+- status: 403
+  type: edge refusal
+  title: Forbidden (nginx)
+  body: nginx 403 HTML — not JSON
+  cause: >-
+    The whole /.well-known/ prefix is refused at the edge before reaching CKAN.
+  remediation: None. No discovery documents are published; do not retry.
+  observed: /.well-known/* on every NGED host
+resource_gate_field:
+  field: resources[].url
+  masked_value: redacted
+  count_masked: 7913
+  count_visible: 778
+  note: >-
+    Anonymous package_search/package_show calls succeed (success:true) but replace
+    the download URL of gated resources with the literal string "redacted". This
+    is a silent, in-payload denial with no error object at all — the third
+    failure mode a client must handle.

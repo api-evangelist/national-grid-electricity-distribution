@@ -1,0 +1,157 @@
+generated: '2026-07-27'
+method: derived
+status: candidate
+source: >-
+  https://connecteddata.nationalgrid.co.uk/api-guidance (NGED's own endpoint
+  table) plus live anonymous /api/3/action/help_show introspection on 2026-07-27
+provider_signal: >-
+  National Grid Electricity Distribution publishes NO MCP server, and no NGED or
+  National Grid page mentions MCP, agents or the Model Context Protocol. There is
+  no /mcp endpoint, no .well-known descriptor (the whole /.well-known/ prefix is
+  403 at the edge), and no registry listing. The tool list below is a CANDIDATE
+  derived from actions NGED documents on its own API Guidance page and whose live
+  docstrings were retrieved anonymously from the portal's own help_show endpoint.
+  It is not an official server and no NGED endorsement is implied.
+server:
+  name: nged-connected-data
+  transport: http
+  url: null
+  api: https://connecteddata.nationalgrid.co.uk/api/3/action/
+authentication:
+  anonymous_tools: >-
+    Every read tool below except get_resource and query_datastore answers with no
+    credential at all.
+  gated_tools: >-
+    get_resource and query_datastore require a free CKAN API token in the
+    Authorization header. Anonymous callers receive HTTP 200 with
+    success:false and "Access denied: Resource access restricted to registered
+    users" — an MCP server wrapping this API must surface that as a tool error,
+    not a successful empty result.
+  see: authentication/national-grid-electricity-distribution-authentication.yml
+schema_source: >-
+  Parameter names below are taken verbatim from the live help_show docstrings
+  (:param annotations) where CKAN exposes them, and from NGED's published
+  endpoint table where the action is a partial-wrapped function whose docstring
+  CKAN does not expose (package_search, package_show, resource_show,
+  resource_search). No parameter was invented; where CKAN hides the signature it
+  is marked schema_source: nged-docs.
+tools:
+- name: search_datasets
+  description: >-
+    Full-text and faceted search across NGED's 92 open datasets. Solr-backed;
+    supports stemming and "+term" filtering.
+  source_operation: GET /api/3/action/package_search
+  parameters: [q, fq, sort, rows, start]
+  schema_source: nged-docs + verified probe (rows=100 returned count 92)
+  auth: anonymous
+- name: list_datasets
+  description: List the names of every dataset in the catalogue.
+  source_operation: GET /api/3/action/package_list
+  parameters: [limit, offset]
+  schema_source: help_show
+  auth: anonymous
+- name: get_dataset
+  description: >-
+    Return the full metadata record for one dataset, including its resources,
+    tags, groups, licence rights, data classification and update frequency.
+  source_operation: GET /api/3/action/package_show
+  parameters: [id]
+  schema_source: nged-docs
+  auth: anonymous
+  caveat: >-
+    Resource download URLs come back as the literal string "redacted" for 7,913
+    of 8,691 resources when called anonymously.
+- name: list_groups
+  description: >-
+    List NGED's six thematic data groups — connection, demand, flexibility,
+    innovation, system-and-network, system-planning.
+  source_operation: GET /api/3/action/group_list
+  parameters: [order_by, sort, limit, offset, groups, all_fields, include_dataset_count,
+    include_extras, include_tags, include_groups, include_users]
+  schema_source: help_show
+  auth: anonymous
+- name: get_group
+  description: Return one data group and, optionally, a truncated list of its datasets.
+  source_operation: GET /api/3/action/group_show
+  parameters: [id, include_datasets, include_dataset_count, include_extras,
+    include_users, include_groups, include_tags, include_followers]
+  schema_source: help_show
+  auth: anonymous
+- name: list_tags
+  description: List the catalogue's 157 free tags.
+  source_operation: GET /api/3/action/tag_list
+  parameters: [query, vocabulary_id, all_fields]
+  schema_source: help_show
+  auth: anonymous
+- name: get_tag
+  description: Return one tag and all its datasets.
+  source_operation: GET /api/3/action/tag_show
+  parameters: [id, vocabulary_id, include_datasets]
+  schema_source: help_show
+  auth: anonymous
+- name: list_organizations
+  description: >-
+    List the publishing organizations — national_grid_electricity_distribution
+    and enigma-interactive.
+  source_operation: GET /api/3/action/organization_list
+  parameters: [order_by, sort, limit, offset, organizations, all_fields,
+    include_dataset_count, include_extras, include_tags, include_groups, include_users]
+  schema_source: help_show
+  auth: anonymous
+- name: list_licenses
+  description: Return the licence register available to datasets on the portal.
+  source_operation: GET /api/3/action/license_list
+  parameters: []
+  schema_source: help_show
+  auth: anonymous
+- name: get_site_status
+  description: >-
+    Return the portal configuration — site title, CKAN version (2.9.8) and the
+    enabled extensions.
+  source_operation: GET /api/3/action/status_show
+  parameters: []
+  schema_source: help_show
+  auth: anonymous
+- name: search_resources
+  description: Search resources by field, e.g. name.
+  source_operation: GET /api/3/action/resource_search
+  parameters: [query]
+  schema_source: nged-docs
+  auth: anonymous
+- name: get_resource
+  description: Return the metadata for one resource, including its real download URL.
+  source_operation: GET /api/3/action/resource_show
+  parameters: [id]
+  schema_source: nged-docs
+  auth: token required
+- name: query_datastore
+  description: >-
+    Query the rows of a DataStore-backed resource with filters, full-text search,
+    field projection and sorting.
+  source_operation: GET /api/3/action/datastore_search
+  parameters: [resource_id, filters, q, distinct, plain, language, limit, offset,
+    fields, sort, include_total, total_estimation_threshold, records_format]
+  schema_source: help_show
+  auth: token required
+- name: describe_action
+  description: >-
+    Return the live docstring for any CKAN action, including its :param
+    annotations. The portal's own introspection endpoint and the only
+    machine-readable interface description NGED exposes.
+  source_operation: GET /api/3/action/help_show
+  parameters: [name]
+  schema_source: verified probe
+  auth: anonymous
+not_exposed_as_tools:
+  reason: >-
+    NGED documents no write surface to third parties and every write action
+    requires POST plus privileges no public account holds. A candidate MCP server
+    for this provider should be read-only.
+  excluded: [package_create, package_update, package_delete, resource_create,
+    resource_update, resource_delete, user_list]
+undocumented_surfaces_excluded:
+  note: >-
+    The eight /__powercuts/* AJAX endpoints on powercuts.nationalgrid.co.uk answer
+    anonymously but are undocumented internal endpoints with no published terms.
+    They are deliberately excluded from this tool list; the same data is published
+    properly as the "Live Power Cuts" dataset (identifier PCD) in the catalogue.

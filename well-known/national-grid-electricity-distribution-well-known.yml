@@ -1,0 +1,59 @@
+generated: '2026-07-27'
+method: probed
+source: anonymous HTTP probes of the NGED API host and website host
+note: >-
+  No /.well-known/ discovery surface exists on any National Grid Electricity
+  Distribution host. On connecteddata.nationalgrid.co.uk the entire /.well-known/
+  path is refused at the edge with an nginx 403 (not a CKAN 404), so the portal
+  serves no RFC 8615 documents at all. On www.nationalgrid.co.uk the same path
+  returns 403. Recorded as verified absence, not as an unprobed gap — no
+  WellKnown, APICatalog or SecurityTxt pointer is wired because no document
+  exists to point at.
+hosts:
+- host: https://connecteddata.nationalgrid.co.uk
+  role: API host (CKAN Action API base) and developer portal
+  documents:
+  - path: /.well-known/security.txt
+    status: 403
+    body: nginx 403 Forbidden (edge refusal of the whole /.well-known/ prefix)
+  - path: /.well-known/openid-configuration
+    status: 403
+  - path: /.well-known/oauth-authorization-server
+    status: 403
+  - path: /.well-known/oauth-protected-resource
+    status: 403
+  - path: /.well-known/api-catalog
+    status: 403
+  - path: /.well-known/ai-plugin.json
+    status: 403
+- host: https://www.nationalgrid.co.uk
+  role: corporate website
+  documents:
+  - path: /.well-known/security.txt
+    status: 403
+- host: https://www.nationalgrid.com
+  role: National Grid plc group site (parent, probed for a group-level policy)
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /responsible-disclosure
+    status: 403
+    body: Cloudflare interstitial ("Just a moment..."), not a policy page
+related_probes:
+- path: /robots.txt
+  host: https://connecteddata.nationalgrid.co.uk
+  status: 200
+  bytes: 4462
+  note: >-
+    Present and substantive. Disallows /api/ to crawlers and carries an extensive
+    ai.robots.txt-derived AI bot blocklist with Crawl-Delay 10. The API is open to
+    callers and closed to crawlers — a deliberate posture, recorded here because
+    it is the only machine-readable agent-facing directive NGED publishes.
+- path: /llms.txt
+  host: https://connecteddata.nationalgrid.co.uk
+  status: 404
+- path: /llms.txt
+  host: https://www.nationalgrid.co.uk
+  status: 200
+  bytes: 0
+  note: Soft 404 — zero-byte text/plain body from the CDN. Not an llms.txt.

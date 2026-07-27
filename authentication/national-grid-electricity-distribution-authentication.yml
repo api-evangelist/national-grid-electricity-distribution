@@ -1,0 +1,96 @@
+generated: '2026-07-27'
+method: searched
+source: https://connecteddata.nationalgrid.co.uk/api-guidance
+docs: https://connecteddata.nationalgrid.co.uk/api-guidance
+note: >-
+  Derived from NGED's own published API Guidance page plus live anonymous probes
+  of the CKAN Action API on 2026-07-27. There is no OpenAPI to derive
+  securitySchemes from, so every field below is grounded in the documentation
+  NGED publishes or in an observed response.
+summary:
+  types: [apiKey]
+  api_key_in: [header]
+  oauth2_flows: []
+  anonymous_access: true
+  registration: self-serve
+schemes:
+- name: CKAN API Token
+  type: apiKey
+  in: header
+  parameter_name: Authorization
+  format: >-
+    Opaque JWT-shaped bearer string. NGED's own redacted cURL example begins
+    "eyJ0eX....eyJqdX...", confirming the CKAN 2.9 JWT-encoded API token format.
+  prefix_required: false
+  prefix_note: >-
+    The raw token value is sent as the entire Authorization header value. NGED's
+    published example uses NO "Bearer" prefix — `curl -H "Authorization: eyJ0eX..."`.
+  issuance: >-
+    Self-issued from the signed-in user's own profile: My User Profile -> "API
+    Tokens" tab -> name the token -> "Create API Token". The value is displayed
+    exactly once and cannot be retrieved again.
+  revocation: >-
+    Revoke by clicking the red "X" in the token's row in the API Tokens table on
+    the user profile. NGED advises deleting rather than abandoning a lost token.
+  rotation_policy: not published
+  expiry: not published (tokens are long-lived until revoked)
+  scopes: none — CKAN API tokens are not scoped; they carry the issuing user's permissions
+  sources: [https://connecteddata.nationalgrid.co.uk/api-guidance]
+anonymous_surface:
+  description: >-
+    A large part of the API answers with no credential at all. These calls were
+    executed anonymously and returned HTTP 200 with success:true on 2026-07-27.
+  actions: [status_show, site_read, package_list, package_search, package_show,
+    group_list, group_show, tag_list, tag_show, organization_list, license_list,
+    help_show]
+  catalogue_exports: [/catalog.jsonld, /catalog.ttl, /catalog.rdf, /catalog.n3]
+  resource_payloads: >-
+    778 of 8,691 resources expose a real download URL anonymously; the other
+    7,913 return the literal string "redacted" in place of the URL.
+gated_surface:
+  description: >-
+    Resource-level actions require a token. Observed anonymously, they return
+    HTTP 200/403 with success:false and an Authorization Error.
+  actions: [resource_show, datastore_search, user_list]
+  observed_response: >-
+    {"error": {"__type": "Authorization Error", "message": "Access denied:
+    Resource access restricted to registered users"}, "success": false}
+  restricted_levels_observed:
+    registered: 7911
+    public: 260
+    only_allowed_users: 2
+    unset: 518
+  note: >-
+    restricted_level is set per resource by the CKAN restricted_api /
+    wpd_restricted_api extensions. "registered" is lifted by any verified
+    account; "only_allowed_users" is a named allow-list (2 resources).
+registration_path:
+- step: 1
+  name: Anonymous
+  requirement: none
+  gets: full catalogue metadata, DCAT exports, 778 open resource payloads
+- step: 2
+  name: Register
+  url: https://connecteddata.nationalgrid.co.uk/user/register
+  requirement: email address plus an emailed verification code (links expire after 1 day)
+  approval: none — no accreditation, no organisation check, no licence signature
+- step: 3
+  name: Create an API token
+  url: https://connecteddata.nationalgrid.co.uk/user/login
+  requirement: signed-in session
+  gets: resource_show, datastore_search, and the 7,913 redacted download URLs
+not_supported:
+  oauth2: >-
+    No OAuth 2.0 anywhere. /.well-known/oauth-authorization-server is 403 at the
+    edge on every NGED host.
+  openid_connect: >-
+    No OIDC. /.well-known/openid-configuration is 403 on both
+    connecteddata.nationalgrid.co.uk and www.nationalgrid.co.uk.
+  mutual_tls: not offered
+  hmac_signing: not offered
+transport_security:
+  https_only: true
+  tls_version: TLSv1.3
+  hsts: true
+  hsts_max_age: 31536000
+  see: security/national-grid-electricity-distribution-domain-security.yml

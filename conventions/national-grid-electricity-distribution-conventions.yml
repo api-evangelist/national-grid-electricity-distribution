@@ -1,0 +1,149 @@
+generated: '2026-07-27'
+method: searched
+source: >-
+  https://connecteddata.nationalgrid.co.uk/api-guidance plus live anonymous
+  probes of the CKAN Action API and the DCAT catalogue exports
+docs: https://connecteddata.nationalgrid.co.uk/api-guidance
+reference: https://docs.ckan.org/en/latest/api/index.html
+note: >-
+  Cross-cutting request/response semantics for the NGED Connected Data Portal.
+  NGED runs a stock CKAN 2.9.8 with the dcat, wpd_dcat, restricted_api,
+  wpd_restricted_api, datastore and datapusher extensions, so the conventions are
+  CKAN's — but every one below was verified against the NGED instance itself on
+  2026-07-27 rather than assumed from upstream.
+transport:
+  base_url: https://connecteddata.nationalgrid.co.uk/api/3/action/
+  protocol: HTTP/2 over TLS 1.3
+  style: RPC-over-HTTP — one action name per path segment, not resource-oriented REST
+  methods: >-
+    GET for every read action; POST required for any state-changing action (which
+    are all closed to third parties). A GET against a write action returns
+    "Bad request - JSON Error: Invalid request. Please use POST method for your request".
+  media_type: application/json;charset=utf-8
+  content_negotiation: >-
+    None on the Action API. Serialisation is negotiated by file extension on the
+    catalogue exports only (.jsonld / .ttl / .rdf / .n3).
+authentication:
+  style: apiKey in the Authorization header, raw token value, no Bearer prefix
+  anonymous_allowed: true
+  see: authentication/national-grid-electricity-distribution-authentication.yml
+envelope:
+  every_response: '{"help": "<url>", "success": <bool>, "result"|"error": ...}'
+  success_field: success
+  payload_field: result
+  error_field: error
+  rule: >-
+    Branch on body.success, never on the HTTP status alone. The most common denial
+    on this API — "Access denied: Resource access restricted to registered users"
+    — is returned with HTTP 200.
+  self_description: >-
+    The "help" URL in every envelope resolves to
+    /api/3/action/help_show?name=<action>, which returns that action's live
+    docstring including its :param annotations. help_show answers anonymously and
+    is the closest thing this API has to a machine-readable contract.
+pagination:
+  styles:
+  - surface: package_search
+    style: offset
+    params: {offset: start, limit: rows}
+    default_limit: 20
+    max_limit: 1000
+    response_fields: [count, results]
+    verified: 'package_search?rows=100 returned count 92 with 92 results on 2026-07-27'
+  - surface: package_list / group_list / organization_list / tag_list
+    style: offset
+    params: {offset: offset, limit: limit}
+    response_fields: [result]
+    note: A bare array under result; no total count is returned.
+  - surface: datastore_search
+    style: offset
+    params: {offset: offset, limit: limit}
+    default_limit: 100
+    response_fields: [total, records, _links.next, _links.start]
+    note: Gated — requires an API token.
+  - surface: catalogue exports (/catalog.jsonld, .ttl, .rdf, .n3)
+    style: hydra paged collection
+    params: {page: page}
+    items_per_page: 10
+    total_pages: 10
+    response_fields: [hydra:totalItems, hydra:itemsPerPage, hydra:firstPage, hydra:nextPage, hydra:lastPage]
+    verified: >-
+      /catalog.jsonld returned a hydra:PagedCollection node declaring
+      itemsPerPage 10, firstPage page=1, lastPage page=10. A harvester that
+      fetches /catalog.jsonld once gets 10 of 92 datasets — the paging is easy to
+      miss because the response is 167 KB and looks complete.
+search:
+  engine: Solr (via CKAN package_search)
+  params: {q: free text, fq: filter query, sort: sort, rows: page size, start: offset}
+  documented_syntax: https://connecteddata.nationalgrid.co.uk/help
+  behaviour: >-
+    Simple search stems terms — "walking" also matches "walk". "gsp +2022"
+    filters matches of "gsp" to those also containing "2022". Documented by NGED
+    on its own Help page.
+  facets: dataclassification, updatefrequency, groups, tags, res_format
+filtering:
+  by_group: group_show?id=<group> — six groups (connection, demand, flexibility,
+    innovation, system-and-network, system-planning)
+  by_tag: tag_show?id=<tag> — 157 tags
+  by_organization: organization_list — two orgs (national_grid_electricity_distribution,
+    enigma-interactive)
+identifiers:
+  dataset: UUID plus a URL-safe slug name; both accepted by package_show?id=
+  resource: UUID
+  external: >-
+    Many datasets carry an NGED-authored short identifier in the "identifier"
+    field (PCD for power cuts, FNGEDGEO for the geospatial family, EMIDPRILIVE /
+    WMIDPRILIVE / SWALESPRILIVE for the live primary substation feeds).
+versioning:
+  scheme: uri-path
+  current: /api/3/
+  platform_version: CKAN 2.9.8 (reported by status_show)
+  policy: not published
+  see: lifecycle/national-grid-electricity-distribution-lifecycle.yml
+idempotency:
+  supported: false
+  header: none
+  note: >-
+    No Idempotency-Key contract exists and none is needed — the entire public
+    surface is read-only GET. No `Idempotency` pointer is wired.
+rate_limiting:
+  signalled: false
+  headers: none
+  observed: >-
+    No X-RateLimit-*, RateLimit-*, or Retry-After headers were returned on any
+    probed call. NGED publishes no quota.
+  crawler_policy: >-
+    robots.txt disallows /api/ to crawlers and sets Crawl-Delay 10, with an
+    extensive ai.robots.txt-derived AI bot blocklist. The API is open to callers
+    and closed to crawlers.
+tracing:
+  request_id_header: none
+  cf_ray: >-
+    Cloudflare returns a cf-ray header on every response; it is the only value a
+    caller can quote back to support, though NGED does not document it as such.
+caching:
+  cache_control: 'public, max-age=0, must-revalidate'
+  etag: not returned
+  metadata_timestamps: 'metadata_created and metadata_modified on every package'
+security_headers:
+  strict_transport_security: max-age=31536000
+  x_content_type_options: nosniff
+  x_frame_options: SAMEORIGIN
+  x_xss_protection: 1; mode=block
+errors:
+  see: errors/national-grid-electricity-distribution-problem-types.yml
+  summary: >-
+    CKAN error envelope keyed on error.__type — Not Found Error (404),
+    Validation Error (409), Authorization Error (403 or 200), plus bare-string
+    400s for unknown actions and wrong methods.
+notifications:
+  mechanism: email subscription per dataset, within 15 minutes of an update
+  webhooks: none
+  docs: https://connecteddata.nationalgrid.co.uk/registration-and-subscription
+licensing:
+  attribution_required: 'Supported by NGED Open Data'
+  licence: https://www.nationalgrid.co.uk/open-data-licence
+  note: >-
+    Licence terms are carried per dataset in the "rights" field (WPD Open Data
+    Licence / WPD Shared Data Licence), and only 19 of 92 datasets populate the
+    standard CKAN license_id. Consumers must read "rights", not license_id.

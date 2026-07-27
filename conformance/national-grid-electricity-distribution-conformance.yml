@@ -1,0 +1,162 @@
+generated: '2026-07-27'
+method: searched
+source: >-
+  live anonymous calls to https://connecteddata.nationalgrid.co.uk/api/3/action/,
+  the DCAT catalogue exports, NGED's API Guidance and Open Data Licence pages
+note: >-
+  Which standards the NGED developer surface actually conforms to, each with the
+  evidence it was asserted from. This round CORRECTS the round-one finding that
+  "no energy-domain standard is referenced": the catalogue itself carries an
+  Ofgem-directed Common Information Model transition, an ENA Open Networks
+  register, and an Icebreaker-One-shaped sensitivity-class field namespace. None
+  of these are claimed on the API Guidance page — they are visible only in the
+  machine-readable catalogue.
+standards:
+- id: ckan-action-api-3
+  name: CKAN Action API v3
+  conforms: true
+  version: CKAN 2.9.8
+  evidence: >-
+    status_show returns ckan_version 2.9.8; NGED's API Guidance documents the
+    base URL https://connecteddata.nationalgrid.co.uk/api/3/action/ and delegates
+    the full reference to docs.ckan.org. help_show answers anonymously for every
+    action tested.
+- id: dcat
+  name: DCAT (Data Catalog Vocabulary)
+  conforms: true
+  version: not stated (CKAN dcat + wpd_dcat extensions)
+  evidence: >-
+    /catalog.jsonld returns application/ld+json with dcat#Catalog, dcat#Dataset
+    and dcat#Distribution typed nodes plus dcterms and foaf terms. Four
+    serialisations are declared in the portal <head> and linked from every page
+    footer — .jsonld, .ttl, .rdf, .n3, all HTTP 200 anonymously.
+- id: hydra-paged-collection
+  name: Hydra Core PagedCollection
+  conforms: true
+  evidence: >-
+    The catalogue exports carry a hydra#PagedCollection node with itemsPerPage
+    10, firstPage page=1, lastPage page=10 and nextPage links.
+- id: json-ld
+  name: JSON-LD 1.1
+  conforms: true
+  evidence: /catalog.jsonld — 167,473 bytes of valid expanded JSON-LD, 98 nodes.
+- id: rdf-turtle
+  name: RDF 1.1 Turtle / N3 / RDF-XML
+  conforms: true
+  evidence: /catalog.ttl, /catalog.n3, /catalog.rdf all HTTP 200 anonymously.
+- id: ogl-v3
+  name: Open Government Licence v3.0 (as the basis of NGED's own licence)
+  conforms: true
+  evidence: >-
+    https://www.nationalgrid.co.uk/open-data-licence states verbatim "These terms
+    are based on the Open Government Licence v3.0" and grants a worldwide,
+    royalty-free, perpetual, non-exclusive licence including commercial reuse,
+    conditional on the attribution "Supported by NGED Open Data". Personal data
+    is excluded by clause 5.1(a).
+- id: ofgem-data-best-practice
+  name: Ofgem Data Best Practice Guidance (electricity distribution licence condition)
+  conforms: true
+  evidence: >-
+    NGED quotes the obligation verbatim in its own dataset metadata — "All DNOs
+    are required by licence condition to comply with Ofgem's Data Best Practice
+    (DBP) Guidance ... now requires DNOs to openly publish Aggregated Smart Meter
+    Consumption Data from 28th February 2024" — and the corresponding datasets
+    (aggregated-smart-meter-data-lv-feeder, -secondary-substation) are live and
+    catalogued. The Open/Shared/Closed triage across 92 datasets (Open 38,
+    Shared 52, Closed 2) is the DBP data-triage framework in production.
+- id: cim-ltds
+  name: Common Information Model for the Long Term Development Statement (Ofgem LTDS Reform)
+  conforms: partial
+  evidence: >-
+    The "LTDS Common Information Model" dataset states, in NGED's own words:
+    "The LTDS Common Information Model (CIM) contains data relating to each of
+    NGED's four licence areas, covering 132kV at Grid Supply Points down to 11kV
+    or 6.6kV at primary substations. This dataset is the second stage in NGED's
+    transition to publishing the LTDS in CIM format, supporting Ofgem's LTDS
+    Reform to improve transparency and interoperability across GB networks."
+    Delivered as CSV/ZIP/PDF resources, not as a CIM/XML or RDF profile, and no
+    IEC part number (61968/61970) is cited by NGED. Recorded as partial: a
+    regulator-directed CIM transition in progress, not a certified CIM interface.
+  correction: >-
+    Supersedes the round-one review line "no IEC CIM 61968/61970" — that probe
+    searched the API guidance, not the catalogue.
+- id: ena-embedded-capacity-register
+  name: ENA Open Networks Embedded Capacity Register (DCUSA DCP 350)
+  conforms: true
+  evidence: >-
+    The Embedded Capacity Register dataset states it is "National Grid
+    Electricity Distribution's contribution to the Embedded Capacity Register
+    (ECR) which has been developed through an ENA Open Network project", renamed
+    from the System Wide Resource Register "in line with the DCUSA change DCP
+    350". Monthly, ≥50 kW connected or accepted generation and storage.
+- id: ib1-sensitivity-classes
+  name: Icebreaker One trust-framework sensitivity classification (field namespace)
+  conforms: partial
+  evidence: >-
+    Every package carries four ib1_* fields — ib1_trust_framework, ib1_scheme,
+    ib1_dataset_assurance, ib1_sensitivity_class. Thirty-one of 92 datasets
+    populate ib1_sensitivity_class with the value "IB1-O"; the other three ib1_
+    fields are present but empty on all of them, and 61 datasets omit the block
+    entirely. The IB1-O value is the Open class of the Icebreaker One trust
+    framework used by GB Open Energy, but NGED never names Icebreaker One, Open
+    Energy or Perseus in any page or dataset description — zero textual hits
+    across the whole catalogue. Recorded as partial and structural: the schema is
+    adopted, the framework membership is not asserted by the provider.
+- id: solr-search-syntax
+  name: Apache Solr query syntax (via CKAN package_search)
+  conforms: true
+  evidence: >-
+    NGED documents stemming and "+term" filtering on its own Help page; q, fq,
+    sort, rows and start behave as CKAN's Solr-backed package_search.
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: >-
+    Errors use the CKAN envelope {"error": {"__type": ..., "message": ...},
+    "success": false} as application/json — not application/problem+json.
+- id: oauth2
+  conforms: false
+  evidence: >-
+    Auth is a single unscoped CKAN API token in the Authorization header. No
+    OAuth endpoints; /.well-known/oauth-authorization-server is 403.
+- id: openid-connect
+  conforms: false
+  evidence: /.well-known/openid-configuration returns 403 on every NGED host.
+- id: rfc9116-security-txt
+  conforms: false
+  evidence: /.well-known/security.txt returns 403 (edge refusal) on every NGED host.
+- id: rfc8594-sunset-header
+  conforms: false
+  evidence: No Sunset or Deprecation headers observed; no deprecation policy published.
+- id: openapi
+  conforms: false
+  evidence: >-
+    /openapi.json, /openapi.yaml, /swagger.json, /api-docs, /api/openapi.json and
+    /api/3/openapi.json all 404 on the API host. CKAN 2.9 ships no OpenAPI
+    document and NGED authored none. The only interface description is the live
+    help_show docstring endpoint.
+- id: asyncapi
+  conforms: false
+  evidence: >-
+    No event, streaming or webhook surface. Change notification is per-dataset
+    email subscription only.
+- id: green-button-espi
+  conforms: false
+  evidence: >-
+    Zero occurrences of "green button" or "ESPI" in the catalogue or any NGED
+    page. Not adopted; not applicable in GB.
+- id: cdr-energy
+  conforms: false
+  evidence: Australian statute. No UK application; Britain has no consumer energy data right.
+- id: ocpp-ocpi-openadr-ieee2030-5
+  conforms: false
+  evidence: >-
+    No occurrence of OCPP, OCPI, OpenADR or IEEE 2030.5 anywhere in the catalogue
+    or documentation.
+compliance_program:
+  published: false
+  note: >-
+    No trust centre, no SOC 2 / ISO 27001 / PCI / HIPAA / FedRAMP certification
+    page, and no vulnerability-disclosure policy was found on any NGED or
+    National Grid plc host reachable anonymously. No `Compliance` or `TrustCenter`
+    pointer is wired. The regulatory conformance above is licence-condition
+    compliance with Ofgem, not an information-security certification program.

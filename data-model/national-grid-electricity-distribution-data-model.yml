@@ -1,0 +1,132 @@
+generated: '2026-07-27'
+method: derived
+source: >-
+  live anonymous CKAN Action API responses (package_search?rows=100,
+  package_show, group_list, organization_list, tag_list) and the DCAT JSON-LD
+  catalogue export, 2026-07-27
+note: >-
+  There is no OpenAPI to derive schemas from, so this entity graph was derived
+  from the real response payloads of the live NGED instance — every entity,
+  field and relationship below appears in a response captured on 2026-07-27. Term
+  meanings and enumerated values live in
+  vocabulary/national-grid-electricity-distribution-vocabulary.yml.
+scale:
+  datasets: 92
+  resources: 8691
+  groups: 6
+  tags: 157
+  organizations: 2
+entities:
+- name: Catalog
+  description: The portal itself. One instance.
+  identity: https://connecteddata.nationalgrid.co.uk
+  source_action: status_show
+  dcat_type: dcat:Catalog
+  fields: [site_title, site_description, ckan_version, extensions, locale_default]
+  relationships:
+  - {type: has_many, target: Dataset, via: dcat:dataset}
+- name: Dataset
+  aliases: [package]
+  description: >-
+    A published data product — 92 of them, spanning live power cuts, live primary
+    substation measurements, LV load monitoring, the Embedded Capacity Register,
+    the LTDS Common Information Model, distribution substation data and the
+    Ofgem-mandated aggregated smart meter consumption data.
+  identity: {primary: id (UUID), secondary: name (slug), external: identifier}
+  source_action: package_show, package_search
+  dcat_type: dcat:Dataset
+  id_accepted_forms: both UUID and slug are accepted by package_show?id=
+  core_fields: [id, name, title, notes, url, version, state, private, type,
+    metadata_created, metadata_modified, num_resources, num_tags, isopen]
+  nged_fields: [dataclassification, rights, updatefrequency, identifier, publisher,
+    contributor, creator, coverage, relation, theme, language, createddate,
+    expirationdate, ib1_trust_framework, ib1_scheme, ib1_dataset_assurance,
+    ib1_sensitivity_class]
+  relationships:
+  - {type: has_many, target: Resource, via: "resources[]"}
+  - {type: has_many, target: Tag, via: "tags[]"}
+  - {type: has_many, target: Group, via: "groups[]"}
+  - {type: belongs_to, target: Organization, via: "owner_org / organization"}
+  - {type: has_many, target: Extra, via: "extras[]"}
+  - {type: has_one, target: License, via: "license_id (populated on only 19 of 92)"}
+  - {type: has_many, target: Dataset, via: "relationships_as_subject / relationships_as_object"}
+- name: Resource
+  description: >-
+    A downloadable file attached to a dataset — 8,691 of them, 99% gzipped or
+    plain CSV. The unit at which NGED's access gate is applied.
+  identity: id (UUID)
+  source_action: package_show (embedded), resource_show (token required)
+  dcat_type: dcat:Distribution
+  core_fields: [id, package_id, name, description, url, format, mimetype, size,
+    hash, position, state, created, last_modified, metadata_modified, url_type,
+    resource_type, datastore_active, cache_url, cache_last_updated]
+  nged_fields: [restricted, restricted_level, restricted_allowed_users, outboundFile,
+    uploaded_date, wpd_datastore_last_updated]
+  relationships:
+  - {type: belongs_to, target: Dataset, via: package_id}
+  - {type: has_one, target: DataStoreTable, via: "id (only where datastore_active is true)"}
+  gate: >-
+    url is replaced by the literal string "redacted" for 7,913 of 8,691 resources
+    when the caller is anonymous. restricted_level carries the reason.
+- name: DataStoreTable
+  description: >-
+    The tabular projection of a resource, queryable row-by-row. Entirely gated —
+    datastore_search returns an Authorization Error to anonymous callers.
+  identity: resource_id (same UUID as the Resource)
+  source_action: datastore_search (token required)
+  relationships:
+  - {type: belongs_to, target: Resource, via: resource_id}
+- name: Group
+  description: >-
+    NGED's six thematic data groups. A dataset may belong to several.
+  identity: name
+  source_action: group_list, group_show
+  values: [connection, demand, flexibility, innovation, system-and-network, system-planning]
+  relationships:
+  - {type: has_many, target: Dataset, via: packages}
+- name: Organization
+  description: >-
+    The owning publisher. Two exist — the DNO itself and the portal developer.
+  identity: name
+  source_action: organization_list
+  values: [national_grid_electricity_distribution, enigma-interactive]
+  relationships:
+  - {type: has_many, target: Dataset, via: owner_org}
+- name: Tag
+  description: 157 free tags. No CKAN tag vocabulary is defined, so tags are uncontrolled.
+  identity: name
+  source_action: tag_list, tag_show
+  relationships:
+  - {type: has_many, target: Dataset, via: "tag_show?id=<tag>"}
+- name: License
+  description: The CKAN licence register, exposed in full anonymously.
+  identity: id
+  source_action: license_list
+  fields: [id, title, url, family, status, od_conformance, osd_conformance,
+    domain_content, domain_data, domain_software]
+  caveat: >-
+    Only 19 of 92 datasets set license_id (all to "wpd-open-data"). The
+    authoritative licence signal is the free-text `rights` field on the dataset,
+    not this relationship.
+- name: Extra
+  description: Free-text key/value pairs on a dataset. Nearly unused.
+  identity: key
+  observed_keys: ['Sensitivity Classification ', source_updated_date]
+  relationships:
+  - {type: belongs_to, target: Dataset, via: "extras[]"}
+- name: ApiToken
+  description: >-
+    A user-issued, unscoped, revocable CKAN API token. Not readable through the
+    public API; created and revoked from the user profile UI only.
+  see: authentication/national-grid-electricity-distribution-authentication.yml
+graph_summary: >-
+  Catalog 1—* Dataset 1—* Resource 1—0..1 DataStoreTable; Dataset *—* Group,
+  Dataset *—* Tag, Dataset *—1 Organization, Dataset *—0..1 License. The whole
+  public graph is readable anonymously down to Resource metadata; the edge from
+  Resource to its payload URL, and the edge from Resource to DataStoreTable, are
+  the two the gate cuts.
+dcat_projection:
+  export: json-ld/national-grid-electricity-distribution-catalog.jsonld
+  mapping: {Catalog: 'dcat:Catalog', Dataset: 'dcat:Dataset', Resource: 'dcat:Distribution',
+    Organization: 'foaf:Agent'}
+  paging: hydra:PagedCollection, 10 items per page, 10 pages

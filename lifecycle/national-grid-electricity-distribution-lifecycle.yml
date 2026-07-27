@@ -1,0 +1,75 @@
+generated: '2026-07-27'
+method: searched
+source: >-
+  https://connecteddata.nationalgrid.co.uk/api-guidance,
+  /api/3/action/status_show, and live probes on 2026-07-27
+versioning:
+  scheme: uri-path
+  current: '3'
+  base: https://connecteddata.nationalgrid.co.uk/api/3/action/
+  platform: CKAN
+  platform_version: 2.9.8
+  platform_source: /api/3/action/status_show
+  extensions_enabled: [dcat, wpd_dcat, restricted_api, wpd_restricted_api, datastore, datapusher]
+  policy_url: null
+  note: >-
+    The API version is CKAN's own major version namespace, not an NGED-authored
+    contract version. NGED publishes no versioning policy, and the platform
+    version it runs (2.9.8, released by the CKAN project in 2023) is behind
+    upstream — a supply-chain fact consumers should know, not a deprecation.
+deprecation:
+  policy_url: null
+  sunset_header: false
+  deprecation_header: false
+  advance_notice: not published
+  note: >-
+    No deprecation policy, no RFC 8594 Sunset/Deprecation header support, and no
+    published change window. Dataset-level retirement is signalled only through
+    the per-dataset "expirationdate" field in the catalogue metadata. No
+    `Deprecation` pointer is wired because no policy exists.
+sla:
+  url: null
+  uptime_target: not published
+  support_channel: nged.data@nationalgrid.co.uk
+  support_url: https://connecteddata.nationalgrid.co.uk/contact
+status_page: null
+status_page_probe:
+  probes:
+  - url: https://status.nationalgrid.co.uk/
+    result: NXDOMAIN
+  note: >-
+    No status page exists for the data portal on any NGED host. Live network
+    status is published for a different purpose entirely —
+    powercuts.nationalgrid.co.uk is the electricity supply status map, not an API
+    status page. No `StatusPage` pointer is wired.
+change_communication:
+  changelog_url: null
+  probes:
+  - {path: /changelog, status: 404}
+  - {path: /news, status: 404}
+  mechanism: >-
+    Per-dataset email subscription — a registered user subscribes to a dataset
+    and is notified within 15 minutes of an update. This is the only change
+    signal NGED offers, and it is per-dataset rather than per-API.
+  docs: https://connecteddata.nationalgrid.co.uk/registration-and-subscription
+data_freshness:
+  field: updatefrequency
+  observed_values:
+    Not Applicable: 38
+    12 Months: 27
+    Near Real Time: 15
+    1 Month: 12
+  note: >-
+    Freshness is declared per dataset rather than per API. Fifteen datasets are
+    "Near Real Time" — the live power-cut feed and the live primary substation
+    measurements for East Midlands, West Midlands and South Wales.
+catalogue_drift:
+  measured: '2026-07-27'
+  datasets: 92
+  resources: 8691
+  previous_measurement: {date: '2026-07-27', datasets: 91, resources: 8687}
+  note: >-
+    The catalogue grew by one dataset and four resources between the review probe
+    and this enrichment probe on the same day. The catalogue is live and
+    continuously edited; any count captured here is a snapshot.
+deprecated_operations: []

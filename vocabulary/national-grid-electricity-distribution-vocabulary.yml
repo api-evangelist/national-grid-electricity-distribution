@@ -1,0 +1,152 @@
+generated: '2026-07-27'
+method: derived
+source: >-
+  live anonymous /api/3/action/package_search?rows=100 over all 92 datasets and
+  8,691 resources on 2026-07-27
+note: >-
+  The controlled vocabulary the NGED Connected Data Portal actually uses. NGED
+  publishes no data dictionary, so every term and every enumerated value below
+  was derived by enumerating the live catalogue — the counts are the observed
+  frequency across 92 datasets. Nothing here is inferred from upstream CKAN
+  documentation; fields CKAN does not ship (the dataclassification / rights /
+  identifier / ib1_* block) are NGED's own extensions and are the interesting
+  part.
+dataset_fields:
+- term: dataclassification
+  origin: NGED extension (Ofgem Data Best Practice data triage)
+  type: enum
+  values:
+  - {value: Shared, count: 52, meaning: openly licensed but payload access restricted to registered users}
+  - {value: Open, count: 38, meaning: openly licensed; most payloads downloadable anonymously}
+  - {value: Closed, count: 2, meaning: not published — only the Data Sharing Assessment PDF is available}
+  caveat: >-
+    "Open" is a LICENSING classification, not an access one. 1,120 resources on
+    Open-classified datasets are still URL-redacted to anonymous callers.
+- term: rights
+  origin: NGED extension
+  type: enum
+  values:
+  - {value: WPD Shared Data Licence, count: 49}
+  - {value: WPD Open Data Licence, count: 43}
+  note: >-
+    The WPD prefix is the Western Power Distribution lineage the portal was built
+    on. Both licences resolve to https://www.nationalgrid.co.uk/open-data-licence.
+    This field — not the standard CKAN license_id — is the authoritative licence
+    signal: only 19 of 92 datasets populate license_id at all.
+- term: updatefrequency
+  origin: NGED extension
+  type: enum
+  values:
+  - {value: Not Applicable, count: 38}
+  - {value: 12 Months, count: 27}
+  - {value: Near Real Time, count: 15}
+  - {value: 1 Month, count: 12}
+- term: identifier
+  origin: NGED extension
+  type: short code
+  examples: [FNGEDGEO, PCD, LTDS-Capacity-Heatmap, EMIDPRILIVE, WMIDPRILIVE, SWALESPRILIVE, flexibility-primary]
+  note: >-
+    NGED's internal dataset code. FNGEDGEO covers the 20-dataset geospatial
+    family; the *PRILIVE codes are the live primary substation feeds for East
+    Midlands, West Midlands and South Wales; PCD is Power Cut Data.
+- term: ib1_sensitivity_class
+  origin: Icebreaker One trust-framework field namespace
+  type: enum
+  values:
+  - {value: IB1-O, count: 31, meaning: the Open sensitivity class of the IB1 trust framework}
+  - {value: unset, count: 61}
+  cross_tab: 'IB1-O appears on 18 Shared datasets and 13 Open datasets'
+  caveat: >-
+    The value is populated but the framework is never named. NGED writes
+    "Icebreaker One", "Open Energy" and "Perseus" nowhere in the catalogue.
+- term: ib1_trust_framework
+  origin: Icebreaker One trust-framework field namespace
+  type: string
+  values: [{value: empty, count: 31}, {value: unset, count: 61}]
+- term: ib1_scheme
+  origin: Icebreaker One trust-framework field namespace
+  type: string
+  values: [{value: empty, count: 31}, {value: unset, count: 61}]
+- term: ib1_dataset_assurance
+  origin: Icebreaker One trust-framework field namespace
+  type: string
+  values: [{value: empty, count: 31}, {value: unset, count: 61}]
+- term: 'Sensitivity Classification (extras)'
+  origin: NGED extension, free-text extras key
+  type: string
+  values: [{value: TBC, count: 8}]
+  note: >-
+    A legacy free-text extras key on eight datasets, all reading "TBC" — the
+    predecessor of the structured ib1_sensitivity_class field, left unfinished.
+- term: publisher
+  origin: DCAT-aligned NGED field
+  type: string
+  values:
+  - {value: National Grid Electricity Distribution, count: 53}
+  - {value: unset, count: 24}
+  - {value: DSO, count: 7}
+  - {value: National Grid DSO, count: 4}
+  data_quality: >-
+    Four distinct spellings for two publishers, including one leading-tab variant
+    and one typo ("Nation Grid Electricity Distribution"). Not a controlled list
+    in practice.
+- term: language
+  type: enum
+  values: [{value: EN, count: 92}]
+- term: theme
+  origin: DCAT
+  type: array
+  values: [{value: empty array, count: 31}, {value: unset, count: 61}]
+  note: Declared but never populated.
+- term: other_declared_fields
+  fields: [coverage, contributor, creator, relation, createddate, expirationdate, version, author, maintainer]
+  note: Present on the package schema; sparsely or never populated.
+resource_fields:
+- term: restricted_level
+  origin: CKAN restricted_api / wpd_restricted_api extensions
+  type: enum
+  values:
+  - {value: registered, count: 7911, meaning: any verified free account unlocks it}
+  - {value: unset, count: 518}
+  - {value: public, count: 260, meaning: anonymous download}
+  - {value: only_allowed_users, count: 2, meaning: named allow-list}
+- term: restricted
+  type: sentinel
+  values:
+  - {value: redacted, count: 7913, meaning: the download URL is withheld from anonymous callers}
+  - {value: unset, count: 778}
+- term: format
+  type: enum
+  values:
+  - {value: GZ, count: 5217}
+  - {value: CSV, count: 3326}
+  - {value: PDF, count: 85}
+  - {value: ZIP, count: 24}
+  - {value: gpkg, count: 17}
+  - {value: XLSX, count: 5}
+  - {value: JSON, count: 4}
+  - {value: .csv.gz, count: 3}
+  - {value: PNG, count: 1}
+  - {value: empty, count: 9}
+  note: >-
+    99% of the estate is gzipped or plain CSV. Four JSON resources and seventeen
+    GeoPackages are the only structured/geospatial exceptions. No GeoJSON, no
+    OGC WMS/WFS service anywhere in the catalogue.
+- term: wpd_datastore_last_updated
+  origin: NGED extension
+  type: timestamp
+groups:
+  term: group
+  count: 6
+  values: [connection, demand, flexibility, innovation, system-and-network, system-planning]
+organizations:
+  term: organization
+  count: 2
+  values:
+  - {name: national_grid_electricity_distribution, role: the publisher}
+  - {name: enigma-interactive, role: the portal developer (Enigma Interactive, per the site footer)}
+tags:
+  term: tag
+  count: 157
+  controlled: false
+  note: Free tags — no CKAN tag vocabulary is defined.

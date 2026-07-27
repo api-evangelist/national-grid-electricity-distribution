@@ -1,0 +1,49 @@
+generated: '2026-07-27'
+method: searched
+source: npm registry search, PyPI, and NGED's own API Guidance page
+packages: []
+finding: >-
+  National Grid Electricity Distribution publishes no first-party client library
+  in any package registry. Its API Guidance page ships two downloadable code
+  EXAMPLES — a Python 3.8 script and a cURL script — but neither is a versioned,
+  installable package, and neither is registered anywhere. Because the developer
+  surface is a stock CKAN 2.9.8 Action API, the practical client is the
+  community-maintained generic CKAN tooling, which is third-party and not
+  attributable to NGED. No `SDKs` pointer is wired: there is no official SDK to
+  count.
+registries_searched:
+- registry: npm
+  queries: ['national grid electricity distribution', nged, connecteddata]
+  result: no first-party package
+- registry: pypi
+  queries: [nged, national-grid, connecteddata]
+  result: no first-party package
+- registry: github
+  note: >-
+    api.github.com/orgs/nationalgrid returns an object with no login, blog or
+    public_repos; national-grid, nationalgriduk and
+    NationalGridElectricityDistribution do not resolve to a usable organization.
+    No NGED source-code presence confirmed.
+third_party_clients:
+- language: python
+  registry: pypi
+  name: ckanapi
+  url: https://pypi.org/project/ckanapi/
+  install: pip install ckanapi
+  official: false
+  note: >-
+    Generic CKAN Action API client. Works against
+    https://connecteddata.nationalgrid.co.uk/api/3/action/ with an NGED API token
+    passed as the apikey/Authorization value. Not published, endorsed or
+    referenced by NGED.
+first_party_examples:
+- name: Python 3.8 example
+  kind: sample script
+  source: https://connecteddata.nationalgrid.co.uk/api-guidance
+  official: true
+  note: Linked from the API Guidance page as "Simple Python Example using NGED CKAN API".
+- name: cURL example
+  kind: sample script
+  source: https://connecteddata.nationalgrid.co.uk/api-guidance
+  official: true
+  note: Linked from the API Guidance page as "Simple cURL Example using NGED CKAN API".

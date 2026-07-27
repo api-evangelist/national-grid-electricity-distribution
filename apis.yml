@@ -82,8 +82,20 @@ apis:
     url: https://connecteddata.nationalgrid.co.uk/dataset/
   - type: Authentication
     url: https://connecteddata.nationalgrid.co.uk/api-guidance
+  - type: Authentication
+    url: authentication/national-grid-electricity-distribution-authentication.yml
+  - type: Conventions
+    url: conventions/national-grid-electricity-distribution-conventions.yml
+  - type: ErrorCatalog
+    url: errors/national-grid-electricity-distribution-problem-types.yml
+  - type: DataModel
+    url: data-model/national-grid-electricity-distribution-data-model.yml
+  - type: MCPServer
+    url: mcp/national-grid-electricity-distribution-mcp.yml
   - type: SignUp
     url: https://connecteddata.nationalgrid.co.uk/user/register
+  - type: GettingStarted
+    url: https://connecteddata.nationalgrid.co.uk/registration-and-subscription
   - type: Documentation
     url: https://connecteddata.nationalgrid.co.uk/registration-and-subscription
   - type: License
@@ -109,6 +121,10 @@ apis:
   properties:
   - type: JSONLD
     url: https://connecteddata.nationalgrid.co.uk/catalog.jsonld
+  - type: JSONLD
+    url: json-ld/national-grid-electricity-distribution-catalog.jsonld
+  - type: Vocabulary
+    url: vocabulary/national-grid-electricity-distribution-vocabulary.yml
   - type: Data
     url: https://connecteddata.nationalgrid.co.uk/catalog.ttl
   - type: Data
@@ -120,6 +136,40 @@ apis:
   - type: License
     url: https://www.nationalgrid.co.uk/open-data-licence
 common:
+- type: DomainSecurity
+  url: security/national-grid-electricity-distribution-domain-security.yml
+- type: Authentication
+  url: authentication/national-grid-electricity-distribution-authentication.yml
+- type: Conventions
+  url: conventions/national-grid-electricity-distribution-conventions.yml
+- type: ErrorCatalog
+  url: errors/national-grid-electricity-distribution-problem-types.yml
+- type: Conformance
+  url: conformance/national-grid-electricity-distribution-conformance.yml
+- type: Vocabulary
+  url: vocabulary/national-grid-electricity-distribution-vocabulary.yml
+- type: DataModel
+  url: data-model/national-grid-electricity-distribution-data-model.yml
+- type: Lifecycle
+  url: lifecycle/national-grid-electricity-distribution-lifecycle.yml
+- type: MCPServer
+  url: mcp/national-grid-electricity-distribution-mcp.yml
+- type: Packages
+  url: packages/national-grid-electricity-distribution-packages.yml
+- type: LLMsTxt
+  url: llms/national-grid-electricity-distribution-llms.txt
+- type: JSONLD
+  url: json-ld/national-grid-electricity-distribution-catalog.jsonld
+- type: APIReference
+  url: https://docs.ckan.org/en/latest/api/index.html
+- type: GettingStarted
+  url: https://connecteddata.nationalgrid.co.uk/registration-and-subscription
+- type: HelpCenter
+  url: https://connecteddata.nationalgrid.co.uk/help
+- type: FAQ
+  url: https://connecteddata.nationalgrid.co.uk/faq
+- type: Login
+  url: https://connecteddata.nationalgrid.co.uk/user/login
 - type: Website
   url: https://www.nationalgrid.co.uk/
 - type: About
