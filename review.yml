@@ -1,0 +1,637 @@
+aid: national-grid-electricity-distribution
+name: National Grid Electricity Distribution
+review:
+  question: >-
+    Does National Grid Electricity Distribution — the DNO for the Midlands, South
+    West England and South Wales, operating in a country that mandated smart-meter
+    INFRASTRUCTURE rather than a consumer data right — publish a documented public
+    API, and does the obligation that actually applies to it exist only on paper?
+  answer: true
+  date: '2026-07-27'
+  reviewer: API Evangelist
+  homeMarket: United Kingdom (England — Midlands and South West; Wales — South Wales)
+  tier: network-distributor
+  method: >-
+    Anonymous HTTP probing of nationalgrid.co.uk and every candidate developer
+    subdomain, DNS resolution of eight candidate hosts, retrieval and text
+    extraction of the portal's own API Guidance and Registration pages, live
+    anonymous calls against the CKAN Action API (status_show, package_search,
+    package_list, group_list, tag_list, package_show, resource_show,
+    datastore_search), anonymous retrieval of resource payloads, static analysis
+    of the power-cuts portal JavaScript bundle, and retrieval of NGED's published
+    Open Data Licence. Every URL below carries the HTTP status observed on
+    2026-07-27.
+
+findings:
+  summary: |
+    National Grid Electricity Distribution publishes a real, documented,
+    anonymously reachable public API. It is not a bespoke energy API — it is the
+    CKAN 2.9.8 Action API behind the Connected Data Portal at
+    connecteddata.nationalgrid.co.uk — but NGED documents it itself on an
+    /api-guidance page with a stated base URL, a worked endpoint table, a token
+    scheme, Postman and cURL instructions, and Python examples. That is more of a
+    developer surface than most utilities in this study manage, and it works
+    without an account for the whole catalogue.
+
+    This is the mirror image of the SA Power Networks finding. There, a real,
+    live, verifiable statutory mandate existed and simply did not reach the
+    distributor. Here, the mandate that applies is not a consumer data right at
+    all — Britain never built one — but it is real, it names DNOs explicitly, and
+    NGED has visibly implemented it. Ofgem's Data Best Practice Guidance is a
+    licence condition on every distribution network operator. NGED states the
+    obligation in its own dataset metadata, verbatim: "All DNOs are required by
+    licence condition to comply with Ofgem's Data Best Practice (DBP) Guidance.
+    The DBP Guidance was updated by Ofgem on 7th August 2023, and the DBP Guidance
+    now requires DNOs to openly publish Aggregated Smart Meter Consumption Data
+    from 28th February 2024." And the data is there — monthly aggregated smart
+    meter consumption at LV feeder and secondary substation level, in gzipped CSV
+    parts, in the catalogue, under an open licence. Mandate and implementation
+    both confirmed, separately.
+
+    The split that defines this sector is stark and legible here. On market and
+    grid data NGED is genuinely open: 91 datasets, 8,687 resources, 155 tags, six
+    data groups, live power cuts at near-real-time, live primary substation
+    transformer flows, LV load monitoring, the Embedded Capacity Register,
+    distribution substation data, and DCAT catalogue exports in four RDF
+    serialisations — all under NGED's own Open Data Licence, explicitly derived
+    from the Open Government Licence v3.0, granting worldwide, royalty-free,
+    perpetual, commercial reuse for attribution. On individual consumer data it
+    publishes nothing and is not asked to: the UK routes household smart-meter
+    data through the licensed Smart DCC monopoly and the retail suppliers, and a
+    DNO is a permitted network user of that infrastructure, not a consumer data
+    holder. The smart-meter data NGED does publish is aggregated by design,
+    precisely so that it is not consumer data.
+
+    The honest caveat: "open" here is a classification, not a blanket. NGED
+    triages every dataset as Open, Shared or Closed — 37, 52 and 2 respectively —
+    which is the Data Best Practice data-triage framework in production. Of 8,687
+    resources, an anonymous API caller sees 774 real download URLs and gets
+    "redacted" for the other 7,913. Resource-level calls return, verbatim,
+    "Access denied: Resource access restricted to registered users". The gate is
+    real, but it is the softest gate in this study: free self-serve registration,
+    a couple of clicks, an emailed verification code, then a self-issued API
+    token from your own user profile. No accreditation, no application review, no
+    licence signature, no commercial deal.
+
+mandate:
+  regime: other
+  regimeName: >-
+    Ofgem Data Best Practice Guidance, imposed as an electricity distribution
+    licence condition (the UK Digitalisation and Data licence obligations arising
+    from the Energy Data Taskforce and Ofgem's Digitalisation Strategy)
+  regimeNote: >-
+    This is deliberately NOT recorded as a consumer data right. Britain has no
+    CDR-equivalent for energy and no Green Button adoption. Ofgem's Data Best
+    Practice Guidance is an OPEN DATA publishing obligation binding on the
+    licensee — presumed open, triage every dataset, publish unless there is a
+    reason not to. It compels a distributor to publish network and system data;
+    it grants no individual a portability right over their own consumption.
+  status: live-implemented
+  statusNote: >-
+    Verified as an implementation, not a claim. The specific obligation NGED
+    itself cites — publish Aggregated Smart Meter Consumption Data from
+    28 February 2024 — has a corresponding live, catalogued, downloadable dataset
+    at both LV feeder and secondary substation granularity. The obligation is
+    quoted by NGED in its own machine-readable dataset metadata, and the data is
+    reachable through the same public API that returned that metadata. Both halves
+    were retrieved anonymously in the same session.
+  verification:
+    - probe: CKAN package_show — Aggregated Smart Meter Data (LV Feeder)
+      url: https://connecteddata.nationalgrid.co.uk/api/3/action/package_show?id=aggregated-smart-meter-data-lv-feeder
+      httpStatus: 200
+      fetched: '2026-07-27'
+      result: >-
+        success:true. dataclassification "Shared", updatefrequency "1 Month",
+        rights "WPD Shared Data Licence". notes field states verbatim: "All DNOs
+        are required by licence condition to comply with Ofgem's Data Best
+        Practice (DBP) Guidance. The DBP Guidance was updated by Ofgem on 7th
+        August 2023, and the DBP Guidance now requires DNOs to openly publish
+        Aggregated Smart Meter Consumption Data from 28th February 2024."
+        Resources include a Data Sharing Assessment PDF plus many
+        Aggregated-Smart-Meter-Data-Lv-Feeder-YYYY-MM-partNNNN.csv.gz files.
+    - probe: CKAN package_search for the phrase "data best practice"
+      url: https://connecteddata.nationalgrid.co.uk/api/3/action/package_search?q=%22data+best+practice%22&rows=5
+      httpStatus: 200
+      fetched: '2026-07-27'
+      result: >-
+        2 datasets — aggregated-smart-meter-data-lv-feeder and
+        aggregated-smart-meter-data-secondary-substation. These are the two
+        datasets that exist specifically because of the licence condition.
+    - probe: CKAN status_show
+      url: https://connecteddata.nationalgrid.co.uk/api/3/action/status_show
+      httpStatus: 200
+      fetched: '2026-07-27'
+      result: >-
+        site_title "National Grid's Data Portal", site_description "Enabling a
+        clean, fair and affordable energy future through open data", ckan_version
+        2.9.8, extensions include dcat, wpd_dcat, restricted_api,
+        wpd_restricted_api, datastore, datapusher. The wpd_* prefixes are the
+        Western Power Distribution lineage the portal was built on.
+    - probe: CKAN organization_list
+      url: https://connecteddata.nationalgrid.co.uk/api/3/action/organization_list
+      httpStatus: 200
+      fetched: '2026-07-27'
+      result: '["enigma-interactive", "national_grid_electricity_distribution"]'
+  secondaryRegime:
+    regime: smart-meter-infrastructure
+    name: Smart Data Communications Company (DCC) under the Smart Energy Code
+    appliesToThisOrg: >-
+      Indirectly. The DCC is the licensed monopoly communications layer for GB
+      smart meters, and a distribution network operator is an eligible network
+      user of it — a CONSUMER of smart-meter data for network purposes, not a
+      publisher of it to third parties. No NGED-operated DCC-facing developer
+      surface, endpoint, base URI or specification was found, and none is
+      expected: DCC access is governed by SEC accession, not by a portal.
+    publicApiSurface: none
+    note: >-
+      This is the whole UK seam in one line — Britain mandated the pipe, not the
+      right. Nothing in the DCC arrangements gives a third-party developer a
+      documented route to an individual NGED-area customer's consumption data.
+  notApplicableRegimes:
+    - regime: cdr-energy
+      note: Australian statute. No UK application.
+    - regime: green-button-ontario
+      note: Ontario regulation. No UK application.
+    - regime: green-button-voluntary
+      note: >-
+        Zero occurrences of "green button", "ESPI" or "espi" found in the portal
+        catalogue via package_search or in any NGED page retrieved. Not adopted.
+
+dataStandard:
+  claimed: none
+  namedByOrganization: >-
+    NGED names no energy data standard. It does implement two general-purpose
+    open-data standards, both verified live.
+  implemented:
+    - standard: CKAN Action API 3 (the de facto open-data catalogue API)
+      version: CKAN 2.9.8
+      evidence: >-
+        Confirmed by status_show (ckan_version 2.9.8) and by NGED's own
+        /api-guidance page, which documents the base URL
+        https://connecteddata.nationalgrid.co.uk/api/3/action/ and points to
+        docs.ckan.org for the full action reference.
+    - standard: DCAT (catalogue vocabulary) via the CKAN dcat / wpd_dcat extensions
+      version: not stated
+      evidence: >-
+        Four alternate representations declared in the portal HTML <head> and
+        linked from the footer of every page — catalog.jsonld (200,
+        application/ld+json, 205,251 bytes), catalog.ttl (200, text/turtle,
+        112,147 bytes), catalog.xml (200), catalog.n3 (200). All retrieved
+        anonymously.
+    - standard: Open Government Licence v3.0 (as the basis of NGED's own licence)
+      version: v3.0-derived, NGED Open Data Licence December 2020
+      evidence: >-
+        https://www.nationalgrid.co.uk/open-data-licence — HTTP 200. States
+        verbatim "These terms are based on the Open Government Licence v3.0" and
+        grants a "worldwide, royalty-free, perpetual, non-exclusive licence",
+        including the right to "exploit the Information commercially and
+        non-commercially", conditional on the attribution "Supported by NGED Open
+        Data".
+  energyStandardsFinding: >-
+    No standard reference found for any energy-domain standard. No Green Button,
+    no ESPI, no CDR Consumer Data Standards, no OCPP, no OCPI, no OpenADR, no
+    IEEE 2030.5, no IEC CIM 61968/61970. The data shape is proprietary CSV with
+    an NGED-authored schema per dataset. Nothing in the catalogue, the API
+    guidance, or the licence names an interoperability profile — which means the
+    91 datasets are open but not portable across DNOs by construction.
+
+consumerVsMarketData:
+  consumerDataApi: false
+  consumerDataFinding: >-
+    A third party CANNOT obtain an individual customer's usage or billing data
+    from NGED through any API, documented or otherwise, and NGED does not claim
+    otherwise. This is structurally correct for a GB distributor: the customer
+    relationship, the billing data and the consented smart-meter data path all sit
+    with the retail supplier and the DCC, not with the poles-and-wires business.
+    The United Kingdom has no consumer energy data-portability mandate — no CDR,
+    no Green Button — so there is no obligation here that has gone unimplemented.
+    The nearest thing NGED holds is smart-meter consumption, and it publishes that
+    only in aggregate, at LV feeder and secondary substation level, explicitly to
+    keep it out of personal-data territory. NGED's own Open Data Licence excludes
+    "personal data in the Information" from the grant.
+  consumerDataProbes:
+    - url: https://connecteddata.nationalgrid.co.uk/api/3/action/package_search?q=%22data+best+practice%22&rows=5
+      httpStatus: 200
+      fetched: '2026-07-27'
+      note: >-
+        The only smart-meter datasets in the catalogue are the two aggregated
+        ones. No per-premise, per-MPAN or per-customer dataset exists.
+    - url: https://www.nationalgrid.co.uk/open-data-licence
+      httpStatus: 200
+      fetched: '2026-07-27'
+      note: Clause 5.1(a) — the licence "does not cover personal data in the Information".
+  marketDataOpen: true
+  marketDataFinding: >-
+    Genuinely open, genuinely anonymous, and — unlike most utilities in this
+    study — genuinely an API rather than a folder of PDFs. The full catalogue is
+    queryable without credentials, and a meaningful subset of payloads downloads
+    with no account at all.
+  marketDataProbes:
+    - probe: CKAN package_search (catalogue size)
+      url: https://connecteddata.nationalgrid.co.uk/api/3/action/package_search?rows=100
+      httpStatus: 200
+      fetched: '2026-07-27'
+      result: >-
+        count 91 datasets, 8,687 resources in total. dataclassification breakdown:
+        Open 37, Shared 52, Closed 2. license_id breakdown: 18 datasets carry
+        "wpd-open-data" / "WPD Open Data Licence", 73 carry an empty license_id
+        while stating rights in a separate field (e.g. "WPD Open Data Licence",
+        "WPD Shared Data Licence").
+    - probe: CKAN group_list / group_show
+      url: https://connecteddata.nationalgrid.co.uk/api/3/action/group_list
+      httpStatus: 200
+      fetched: '2026-07-27'
+      result: >-
+        Six data groups — connection, demand, flexibility, innovation,
+        system-and-network, system-planning. group_show?id=demand returns 28
+        packages.
+    - probe: CKAN tag_list
+      url: https://connecteddata.nationalgrid.co.uk/api/3/action/tag_list
+      httpStatus: 200
+      fetched: '2026-07-27'
+      result: 155 tags.
+    - probe: Anonymous resource download — Live Power Cuts (Open)
+      url: https://connecteddata.nationalgrid.co.uk/dataset/d6672e1e-c684-4cea-bb78-c7e5248b62a2/resource/292f788f-4339-455b-8cc0-153e14509d4d/download/power_outage_ext.csv
+      httpStatus: 200
+      contentType: text/csv
+      bytes: 7983
+      anonymous: true
+      fetched: '2026-07-27'
+    - probe: Anonymous resource download — Live Data, East Midlands (Open)
+      url: https://connecteddata.nationalgrid.co.uk/dataset/7235194a-884d-47ff-bd03-a0ad38eedcb3/resource/92d3431c-15d7-4aa6-ad34-2335596a026c/download/eastmidlands.csv
+      httpStatus: 200
+      contentType: text/csv
+      bytes: 10269
+      anonymous: true
+      fetched: '2026-07-27'
+    - probe: Anonymous resource download — Generation Capacity Register data sharing assessment (Shared)
+      url: https://connecteddata.nationalgrid.co.uk/dataset/3b38c370-f1ae-49a6-86f3-05fcfd88d3e1/resource/e1d48ce0-137f-41dd-977a-582bb443e2d1/download/dsa022-generation-capacity-register.pdf
+      httpStatus: 200
+      contentType: application/pdf
+      bytes: 39563
+      anonymous: true
+      fetched: '2026-07-27'
+    - probe: DCAT catalogue export
+      url: https://connecteddata.nationalgrid.co.uk/catalog.jsonld
+      httpStatus: 200
+      contentType: application/ld+json
+      bytes: 205251
+      anonymous: true
+      fetched: '2026-07-27'
+  redactionMeasurement:
+    probe: >-
+      Counted resource URL visibility across all 91 datasets returned by an
+      anonymous package_search?rows=100.
+    fetched: '2026-07-27'
+    result: >-
+      8,687 resources total. Anonymously visible download URLs: 774. Returned as
+      the literal string "redacted": 7,913. By classification —
+      Open: 580 visible / 1,120 redacted; Shared: 192 visible / 6,791 redacted;
+      Closed: 2 visible / 2 redacted. Note that "Open" classification does not
+      mean anonymously downloadable: it means openly licensed. The redaction is
+      applied by the restricted_api / wpd_restricted_api CKAN extensions and is
+      lifted by any registered account.
+  theSplit: >-
+    Wide open on grid and market data, structurally absent on consumer data — and
+    unlike Australia, that absence is not a failure of implementation. Britain
+    never legislated a consumer energy data right, so there is nothing for NGED to
+    have failed to build. What Britain did legislate landed on the distributor as
+    an open-publishing duty, and NGED complied with an actual API. The result is a
+    utility that will tell an anonymous developer, in JSON, exactly where every
+    substation is and how much every LV feeder consumed last month — and cannot
+    tell them anything at all about a single household.
+
+accessGate:
+  gate: self-serve
+  gated: true
+  gatedNote: >-
+    Recorded as gated:true because the majority of payloads and all resource-level
+    API calls require an account. But this is the softest gate in the study — free,
+    instant, self-issued, no human in the loop. The catalogue itself is ungated.
+  developerPath: >-
+    1) Anonymous — no action at all. Call
+    https://connecteddata.nationalgrid.co.uk/api/3/action/package_search (or
+    package_list, package_show, group_list, group_show, tag_list, status_show,
+    site_read) and get 200 JSON immediately. Fetch catalog.jsonld/.ttl/.xml/.n3
+    for the whole DCAT catalogue. Download the 774 resources whose URLs are not
+    redacted.
+    2) Registered — click "Register" in the portal header, supply an email,
+    receive a verification code by email (links expire after 1 day), verify, sign
+    in. NGED's own words: "Registration is simple and can be done with just a
+    couple of clicks." No approval step, no accreditation, no organisation check,
+    no licence signature.
+    3) Tokened — from your user profile, open the "API Tokens" tab, name a token,
+    click "Create API Token". The token is shown exactly once. Send it in the
+    Authorization HTTP header (raw token value, no Bearer prefix, per NGED's own
+    cURL example). This unlocks resource_show, datastore_search and the redacted
+    download URLs.
+  paths:
+    - surface: Catalogue metadata and DCAT exports
+      gate: none
+      steps: Call the endpoint. No key, no referrer, no click-through.
+    - surface: Open-classified resource payloads with visible URLs
+      gate: none
+      steps: GET the download URL.
+    - surface: Resource-level API and redacted payloads (7,913 resources)
+      gate: self-serve
+      steps: Register, verify email, create an API token, send it in the Authorization header.
+    - surface: Closed-classified datasets (2)
+      gate: none-published
+      steps: >-
+        Not published. Only the accompanying Data Sharing Assessment PDF is
+        available (flexibility-primacy, rota-load-disconnection).
+
+authModel:
+  scheme: CKAN API Token — an opaque JWT-shaped bearer string sent in the Authorization header
+  finding: >-
+    No OAuth 2.0, no OpenID Connect, no mTLS, no accreditation regime. Auth is a
+    single long-lived, user-generated, revocable API token, documented by NGED
+    with both Postman and cURL walkthroughs. NGED's published cURL example is:
+    curl -H "Authorization: eyJ0eXXXX....eyJqdXXXX...."
+    https://connecteddata.nationalgrid.co.uk/api/3/action/resource_show?id=<uuid>
+    The token prefix in NGED's own redacted example ("eyJ") confirms the CKAN 2.9
+    JWT-encoded token format. Tokens are created, listed and revoked from the
+    user profile's "API Tokens" tab; NGED warns the value is shown only once.
+  evidence:
+    - url: https://connecteddata.nationalgrid.co.uk/api-guidance
+      httpStatus: 200
+      fetched: '2026-07-27'
+      note: >-
+        Full API Guidance page. Documents the base URL, an 8-row endpoint example
+        table (group_list, package_list, tag_list, package_show, tag_show,
+        group_show, resource_show, package_search, resource_search,
+        datastore_search), API token creation, Postman configuration, cURL
+        configuration, token loss/revocation, and links Python 3.8 and cURL
+        example downloads.
+    - url: https://connecteddata.nationalgrid.co.uk/api/3/action/resource_show?id=d76510ad-174e-4a45-b0c7-3bfc2703663a
+      httpStatus: 200
+      fetched: '2026-07-27'
+      note: >-
+        Anonymous call. Body: {"error":{"__type":"Authorization Error","message":
+        "Access denied: Resource access restricted to registered users"},
+        "success":false}. This is the verbatim gate message.
+    - url: https://connecteddata.nationalgrid.co.uk/api/3/action/datastore_search?resource_id=d76510ad-174e-4a45-b0c7-3bfc2703663a&limit=2
+      httpStatus: 200
+      fetched: '2026-07-27'
+      note: Same Authorization Error body. The DataStore is registered-users-only.
+    - url: https://connecteddata.nationalgrid.co.uk/.well-known/openid-configuration
+      httpStatus: 403
+      fetched: '2026-07-27'
+      note: >-
+        Fetched anonymously as required. Cloudflare-blocked, not served. No OIDC
+        discovery document exists on any NGED host.
+    - url: https://www.nationalgrid.co.uk/.well-known/openid-configuration
+      httpStatus: 403
+      fetched: '2026-07-27'
+    - url: https://www.nationalgrid.co.uk/.well-known/security.txt
+      httpStatus: 403
+      fetched: '2026-07-27'
+
+downloadableContracts:
+  found: false
+  specsCount: 0
+  openapiDirectory: omitted (nothing real was found)
+  finding: >-
+    NGED publishes no OpenAPI, AsyncAPI, GraphQL SDL, JSON Schema, Postman
+    collection or MCP descriptor. CKAN 2.9 ships no OpenAPI document of its own,
+    and NGED did not author one — its API Guidance page delegates the full
+    reference to docs.ckan.org. Nothing was fabricated to fill the gap. The two
+    machine-readable artifacts that DO exist are the DCAT catalogue exports, which
+    describe the data rather than the interface, and are recorded in apis.yml as
+    such rather than dressed up as a contract.
+  subdomainProbes:
+    - host: connecteddata.nationalgrid.co.uk
+      dns: 104.18.39.233, 172.64.148.23 (Cloudflare)
+      httpStatus: 200
+      note: THE developer surface. CKAN 2.9.8, "National Grid Open Data Gateway".
+    - host: developer.nationalgrid.co.uk
+      dns: NXDOMAIN
+    - host: developers.nationalgrid.co.uk
+      dns: NXDOMAIN
+    - host: api.nationalgrid.co.uk
+      dns: NXDOMAIN
+    - host: apis.nationalgrid.co.uk
+      dns: NXDOMAIN
+    - host: docs.nationalgrid.co.uk
+      dns: NXDOMAIN
+    - host: data.nationalgrid.co.uk
+      dns: NXDOMAIN
+    - host: opendata.nationalgrid.co.uk
+      dns: NXDOMAIN
+    - host: portal.nationalgrid.co.uk
+      dns: NXDOMAIN
+    - host: connect.nationalgrid.co.uk
+      dns: NXDOMAIN
+    - host: www.nationalgrid.co.uk
+      dns: Cloudflare CDN
+      httpStatus: 200
+    - host: powercuts.nationalgrid.co.uk
+      httpStatus: 200
+      note: Live power-cut map. Angular 1.8.2 SPA. See undocumentedSurfaces below.
+    - host: dso.nationalgrid.co.uk
+      httpStatus: 200
+      note: Distribution System Operator site. Flexibility news and services. No API.
+    - host: connections.nationalgrid.co.uk
+      httpStatus: 200
+      note: Connections journey. Links out to the Connected Data portal. No API.
+    - host: planned.nationalgrid.co.uk
+      httpStatus: 200
+      note: Planned outages. No API.
+    - host: powerdiscoveryzone.nationalgrid.co.uk
+      httpStatus: 200
+      note: Education site. No API.
+    - host: commercial.nationalgrid.co.uk
+      httpStatus: 200
+      note: Hosts the Network Opportunity Map and the Digitalisation & Data pages.
+    - host: customer.nationalgrid.co.uk
+      httpStatus: 200
+      note: Regulatory information. No API.
+  pathProbes:
+    - host: connecteddata.nationalgrid.co.uk
+      path: /api-guidance
+      httpStatus: 200
+    - host: connecteddata.nationalgrid.co.uk
+      path: /api
+      httpStatus: 200
+    - host: connecteddata.nationalgrid.co.uk
+      path: /api/3
+      httpStatus: 200
+    - host: connecteddata.nationalgrid.co.uk
+      path: /openapi.json
+      httpStatus: 404
+    - host: connecteddata.nationalgrid.co.uk
+      path: /openapi.yaml
+      httpStatus: 404
+    - host: connecteddata.nationalgrid.co.uk
+      path: /swagger.json
+      httpStatus: 404
+    - host: connecteddata.nationalgrid.co.uk
+      path: /swagger
+      httpStatus: 404
+    - host: connecteddata.nationalgrid.co.uk
+      path: /api-docs
+      httpStatus: 404
+    - host: connecteddata.nationalgrid.co.uk
+      path: /api/openapi.json
+      httpStatus: 404
+    - host: connecteddata.nationalgrid.co.uk
+      path: /api/3/openapi.json
+      httpStatus: 404
+    - host: connecteddata.nationalgrid.co.uk
+      path: /robots.txt
+      httpStatus: 200
+      note: >-
+        Disallows /api/ to crawlers and carries an extensive ai.robots.txt-derived
+        AI bot blocklist. Crawl-Delay 10. The API is open to callers, closed to
+        crawlers.
+    - host: www.nationalgrid.co.uk
+      path: /openapi.json
+      httpStatus: 200
+      note: >-
+        FALSE POSITIVE. Zero-byte body, content-type text/plain. A soft 404 from
+        the CDN. Same for /swagger.json, /api and /developers — all 200, all
+        0 bytes. Recorded here so the 200 is never mistaken for a spec.
+    - host: www.nationalgrid.co.uk
+      path: /developers
+      httpStatus: 200
+      note: Soft 404, 0 bytes.
+    - host: www.nationalgrid.co.uk
+      path: /sitemap.xml
+      httpStatus: 200
+
+undocumentedSurfaces:
+  note: >-
+    Recorded for completeness and deliberately NOT listed in apis.yml. These are
+    internal AJAX endpoints extracted from the power-cuts portal's own JavaScript
+    bundle. They are real and they answer anonymously, but NGED documents none of
+    them, publishes no contract for them, and offers no terms for their use.
+    Treating them as a public API would misrepresent the provider.
+  source:
+    url: https://powercuts.nationalgrid.co.uk/public/javascripts/angular.powercuts.js
+    httpStatus: 200
+    bytes: 60913
+    fetched: '2026-07-27'
+  endpoints:
+    - /__powercuts/getAlerts
+    - /__powercuts/getIncidentById
+    - /__powercuts/getIncidentsAndAlertSummary
+    - /__powercuts/getIncidentsByPostcode
+    - /__powercuts/getRecentlySubmittedReportCount
+    - /__powercuts/getTabularView
+    - /__powercuts/getTotalsView
+    - /__powercuts/getTwitterFeed
+  liveCheck:
+    - url: https://powercuts.nationalgrid.co.uk/__powercuts/getIncidentsAndAlertSummary
+      httpStatus: 200
+      contentType: application/json; charset=utf-8
+      bytes: 1885
+      anonymous: true
+      fetched: '2026-07-27'
+    - url: https://powercuts.nationalgrid.co.uk/public/geojson/map.geojson
+      httpStatus: 200
+      bytes: 93816
+      anonymous: true
+      fetched: '2026-07-27'
+  documentedAlternative: >-
+    The same information IS published properly — the "Live Power Cuts" dataset in
+    the Connected Data catalogue (dataclassification Open, updatefrequency "Near
+    Real Time", rights "WPD Open Data Licence", identifier PCD) carries
+    power_outage_ext.csv and live_detailed_power_cuts.csv and downloads
+    anonymously. A developer should use that, not the __powercuts endpoints.
+
+sources:
+  - url: https://connecteddata.nationalgrid.co.uk/
+    type: Portal
+    httpStatus: 200
+    note: >-
+      CKAN 2.9.8. meta description "National Grid Open Data Gateway". Declares
+      four DCAT alternate representations in <head>. Theme assets are namespaced
+      /webassets/wpd/ — the Western Power Distribution inheritance.
+  - url: https://connecteddata.nationalgrid.co.uk/api-guidance
+    type: Documentation
+    httpStatus: 200
+    note: The developer documentation. Base URL, endpoint table, token scheme, examples.
+  - url: https://connecteddata.nationalgrid.co.uk/registration-and-subscription
+    type: Documentation
+    httpStatus: 200
+    note: >-
+      Confirms self-serve registration with email verification, per-dataset
+      subscription notifications within 15 minutes of update, and
+      nged.data@nationalgrid.co.uk as the contact for account deletion.
+  - url: https://connecteddata.nationalgrid.co.uk/about
+    type: About
+    httpStatus: 200
+    note: >-
+      "We are the electricity distribution network operator for the Midlands,
+      South West and Wales. We deliver electricity to over 7.9 million customers
+      over a 55,500 square kilometres service area and we employ over 6,500
+      staff." Also names the seven NGED legal entities and confirms Ofgem
+      regulation.
+  - url: https://www.nationalgrid.co.uk/open-data-licence
+    type: License
+    httpStatus: 200
+    note: >-
+      NGED Open Data Licence, December 2020, "based on the Open Government Licence
+      v3.0". Worldwide, royalty-free, perpetual, non-exclusive, commercial reuse
+      permitted, attribution "Supported by NGED Open Data" required, personal data
+      excluded.
+  - url: https://connecteddata.nationalgrid.co.uk/api/3/action/status_show
+    type: API
+    httpStatus: 200
+    note: CKAN version and extension list. Anonymous.
+  - url: https://connecteddata.nationalgrid.co.uk/api/3/action/package_search?rows=100
+    type: API
+    httpStatus: 200
+    note: >-
+      The load-bearing call. 91 datasets, 8,687 resources, the Open/Shared/Closed
+      triage, and the redaction counts. Anonymous.
+  - url: https://connecteddata.nationalgrid.co.uk/api/3/action/package_show?id=aggregated-smart-meter-data-lv-feeder
+    type: API
+    httpStatus: 200
+    note: >-
+      The mandate evidence. NGED quotes its own Ofgem licence condition in the
+      dataset notes and ships the data alongside it.
+  - url: https://connecteddata.nationalgrid.co.uk/catalog.jsonld
+    type: JSONLD
+    httpStatus: 200
+    note: 205,251 bytes of DCAT JSON-LD. Anonymous.
+  - url: https://connecteddata.nationalgrid.co.uk/dataset/distribution-substations
+    type: Data
+    httpStatus: 200
+    note: >-
+      A "Shared" dataset. The anonymous HTML page lists only the Data Sharing
+      Assessment PDF resource — the CSV is neither linked nor URL-disclosed until
+      you sign in. Confirms the gate is enforced in the UI as well as the API.
+  - url: https://commercial.nationalgrid.co.uk/digitalisation-and-data
+    type: Documentation
+    httpStatus: 200
+    note: NGED's digitalisation and data programme page, linked from the portal help.
+  - url: https://api.github.com/orgs/nationalgrid
+    type: Registry
+    httpStatus: 200
+    note: >-
+      Returns an object with no login, name, blog, description or public_repos —
+      no usable NGED GitHub organization. national-grid, nationalgriduk and
+      NationalGridElectricityDistribution all returned 403 (not found / rate
+      shaped). No NGED source-code presence was confirmed.
+  - url: https://data.gov.uk/api/3/action/package_search?q=%22National+Grid+Electricity+Distribution%22
+    type: Registry
+    httpStatus: 200
+    note: >-
+      success:true, count 0. NGED publishes nothing to the UK national open data
+      portal — its open data lives entirely on its own CKAN instance.
+
+actions:
+  apisListed: 2
+  apisYmlCreated: true
+  openapiHarvested: false
+  specsCount: 0
+  reason: >-
+    Two real APIs are listed — the documented CKAN Action API and the DCAT
+    catalogue export surface — because both are real, both are documented by NGED
+    on its own pages, and both answered anonymously with 200 on 2026-07-27. No
+    OpenAPI, AsyncAPI, GraphQL, Postman collection, JSON Schema or MCP descriptor
+    exists to harvest, so openapi/ is omitted rather than filled with anything
+    derived or invented. The eight /__powercuts/* endpoints observed in the
+    power-cuts JavaScript bundle are recorded in this review but deliberately
+    excluded from apis.yml because NGED documents none of them.
