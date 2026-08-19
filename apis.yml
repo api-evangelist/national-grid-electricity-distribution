@@ -42,7 +42,7 @@ tags:
 - Renewables
 created: '2026-07-27'
 modified: '2026-07-27'
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 apis:
 - aid: national-grid-electricity-distribution:nged-connected-data-api
   name: NGED Connected Data Portal API
