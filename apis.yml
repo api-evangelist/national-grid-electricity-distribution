@@ -27,6 +27,17 @@ description: >-
   individual consumer data, which the distributor is neither obliged nor equipped
   to expose. Anonymous callers get the full catalogue and 774 resource payloads;
   the other 7,913 are redacted behind a free, self-serve, email-verified account.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: false
+  label: Hosted service · you call their endpoint
+  confidence: medium
+  source:
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
 tags:
 - Energy
